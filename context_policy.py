@@ -2,6 +2,7 @@
 """Prepare and score the ADR-0002 context-policy experiment using only stdlib."""
 
 import argparse
+import datetime
 import hashlib
 import json
 import math
@@ -10,10 +11,12 @@ import shlex
 import sqlite3
 import statistics
 import subprocess
+import tempfile
 from pathlib import Path
 
 
 CONDITIONS = ("automatic", "explicit")
+SELECTION_KINDS = {"user_explicit", "workflow_observed", "inferred"}
 RUNS = 3
 PACKAGE_COUNT = 8 * len(CONDITIONS) * RUNS
 PINNED_MODEL_ID = "gpt-5.6-sol"
@@ -57,6 +60,10 @@ def write_jsonl(path, rows):
     with path.open("x", encoding="utf-8") as handle:
         for row in rows:
             handle.write(json.dumps(row, sort_keys=True) + "\n")
+
+
+def canonical_sha256(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
 def word_count(text):
@@ -126,6 +133,35 @@ def load_selections(path, scenarios):
         selected = selection.get("selected_source_ids")
         if not selected or len(selected) != len(set(selected)) or not set(selected) <= source_ids:
             raise ValueError(f"invalid recorded selection in {scenario_id}")
+        if selection.get("selection_kind") not in SELECTION_KINDS:
+            raise ValueError(f"invalid selection kind in {scenario_id}")
+        provenance = selection.get("provenance")
+        if not isinstance(provenance, dict) or not {
+            "task_id", "session_id", "run_id"
+        } <= provenance.keys():
+            raise ValueError(f"selection provenance is incomplete in {scenario_id}")
+        if any(
+            not isinstance(provenance[field], str) or not provenance[field].strip()
+            for field in ("task_id", "session_id", "run_id")
+        ):
+            raise ValueError(f"selection provenance is invalid in {scenario_id}")
+        if not isinstance(selection.get("recorded_date"), str) or not selection["recorded_date"].strip():
+            raise ValueError(f"selection recorded date is missing in {scenario_id}")
+        source_by_id = {source["id"]: source for source in by_scenario[scenario_id]["sources"]}
+        artifacts = selection.get("source_artifacts")
+        if not isinstance(artifacts, list) or len(artifacts) != len(selected):
+            raise ValueError(f"source artifact provenance is incomplete in {scenario_id}")
+        artifact_ids = set()
+        for artifact in artifacts:
+            source_id = artifact.get("source_id") if isinstance(artifact, dict) else None
+            if source_id not in selected or source_id in artifact_ids:
+                raise ValueError(f"invalid source artifact provenance in {scenario_id}")
+            expected = source_by_id[source_id]["provenance"]
+            if artifact.get("artifact_id") != expected["artifact_id"] or artifact.get("version") != expected["version"]:
+                raise ValueError(f"source artifact provenance does not match {scenario_id}")
+            artifact_ids.add(source_id)
+        if artifact_ids != set(selected):
+            raise ValueError(f"source artifact provenance is incomplete in {scenario_id}")
         if any(field in selection for field in ("expected", "forbidden", "relevant_sources")):
             raise ValueError("selection records must not contain scoring data")
         result[scenario_id] = selection
@@ -383,10 +419,10 @@ def prepare(scenarios_path, output, token_counter, tokenizer_id, selections_path
     key = []
     try:
         for scenario in scenarios:
-            automatic = ranked_sources(connection, scenario)
+            automatic_sources = ranked_sources(connection, scenario)
             for condition in CONDITIONS:
                 if condition == "automatic":
-                    sources = automatic
+                    sources = automatic_sources
                 else:
                     sources = [
                         source for source in scenario["sources"]
@@ -421,6 +457,8 @@ def prepare(scenarios_path, output, token_counter, tokenizer_id, selections_path
                             "preflight_counter_id": PREFLIGHT_COUNTER_ID,
                             "tokenizer_id": tokenizer_id,
                             "prompt_sha256": prompt_sha256,
+                            "selection_kind": selections[scenario["id"]]["selection_kind"],
+                            "selection_sha256": canonical_sha256(selections[scenario["id"]]),
                         }
                     )
                     _insert_snapshot(connection, scenario, condition, run, prompt)
@@ -481,9 +519,80 @@ def validate_answer(row):
         raise ValueError("input_tokens, elapsed_ms, and manual_actions must be non-negative")
 
 
-def score(key_path, answers_path):
+def receipt_failure(receipts, failure):
+    return {
+        "valid": False,
+        "expected_count": PACKAGE_COUNT,
+        "receipt_count": len(receipts),
+        "failure": failure,
+    }
+
+
+def receipt_validation(receipts, key, answered):
+    if len(receipts) != PACKAGE_COUNT:
+        return receipt_failure(receipts, "missing_or_incomplete_receipts")
+    seen_packages = set()
+    seen_responses = set()
+    required = {
+        "package_id": str,
+        "prompt_sha256": str,
+        "answer_sha256": str,
+        "provider_response_id": str,
+        "model_id": str,
+        "settings": dict,
+        "tokenizer_id": str,
+        "input_tokens": (int, float),
+        "completed_at": str,
+    }
+    for receipt in receipts:
+        if not isinstance(receipt, dict) or any(
+            field not in receipt or not isinstance(receipt[field], expected)
+            for field, expected in required.items()
+        ):
+            return receipt_failure(receipts, "invalid_receipt_schema")
+        package_id = receipt["package_id"]
+        response_id = receipt["provider_response_id"]
+        if (
+            package_id in seen_packages
+            or response_id in seen_responses
+            or not receipt["prompt_sha256"].strip()
+            or not receipt["answer_sha256"].strip()
+            or not response_id.strip()
+            or not receipt["model_id"].strip()
+            or not receipt["tokenizer_id"].strip()
+            or not receipt["completed_at"].strip()
+            or package_id not in key
+        ):
+            return receipt_failure(receipts, "duplicate_or_unmatched_receipt")
+        try:
+            datetime.datetime.fromisoformat(receipt["completed_at"].replace("Z", "+00:00"))
+        except ValueError:
+            return receipt_failure(receipts, "invalid_completion_timestamp")
+        tokens = receipt["input_tokens"]
+        if isinstance(tokens, bool) or not math.isfinite(tokens) or tokens < 0:
+            return receipt_failure(receipts, "invalid_provider_input_tokens")
+        package = key[package_id]
+        answer = answered[package_id]
+        if (
+            receipt["prompt_sha256"] != package["prompt_sha256"]
+            or receipt["answer_sha256"] != hashlib.sha256(answer["text"].encode()).hexdigest()
+            or receipt["model_id"] != answer["model_id"]
+            or receipt["settings"] != answer["settings"]
+            or receipt["tokenizer_id"] != answer["tokenizer_id"]
+            or receipt["input_tokens"] != answer["input_tokens"]
+        ):
+            return receipt_failure(receipts, "receipt_does_not_match_answer_or_package")
+        seen_packages.add(package_id)
+        seen_responses.add(response_id)
+    if seen_packages != set(key):
+        return receipt_failure(receipts, "receipt_package_set_mismatch")
+    return {"valid": True, "expected_count": PACKAGE_COUNT, "receipt_count": len(receipts)}
+
+
+def score(key_path, answers_path, receipts_path=None, selections_path=None):
     key = read_jsonl(key_path)
     answers = read_jsonl(answers_path)
+    receipts = read_jsonl(receipts_path) if receipts_path and receipts_path.exists() else []
     if len(key) != PACKAGE_COUNT or len(answers) != PACKAGE_COUNT:
         raise ValueError(f"exactly {PACKAGE_COUNT} prepared packages and answers are required")
     for answer in answers:
@@ -492,6 +601,7 @@ def score(key_path, answers_path):
     answered = {row["package_id"]: row for row in answers}
     if len(keyed) != len(key) or len(answered) != len(answers) or set(answered) != set(keyed):
         raise ValueError("answers must contain each prepared package exactly once")
+    receipts_status = receipt_validation(receipts, keyed, answered)
     fingerprints = {
         (
             row["model_id"],
@@ -578,6 +688,23 @@ def score(key_path, answers_path):
         and tokenizer_id == PINNED_TOKENIZER_ID
         and settings == PINNED_SETTINGS
     )
+    scenario_path = Path("scenarios.json")
+    selections = load_selections(selections_path or scenario_path.with_name("selections.json"), load_scenarios(scenario_path))
+    selection_kinds = {selection["selection_kind"] for selection in selections.values()}
+    selection_scenarios = set(selections)
+    expected_scenarios = {
+        row["scenario_id"] for row in scenario_results if row["condition"] == "automatic"
+    }
+    key_selection_metadata_matches = all(
+        row.get("selection_kind") == selections.get(row.get("scenario_id"), {}).get("selection_kind")
+        and row.get("selection_sha256") == canonical_sha256(selections[row["scenario_id"]])
+        for row in key
+    )
+    all_user_explicit = (
+        selection_scenarios == expected_scenarios
+        and selection_kinds == {"user_explicit"}
+        and key_selection_metadata_matches
+    )
     valid = (
         len(key) == PACKAGE_COUNT
         and len(answers) == PACKAGE_COUNT
@@ -586,6 +713,8 @@ def score(key_path, answers_path):
         and all(answer["tokenizer_id"] == key[0]["tokenizer_id"] for answer in answers)
         and all(answered[package["package_id"]]["input_tokens"] <= package["token_ceiling"] for package in key)
         and pinned_execution
+        and all_user_explicit
+        and receipts_status["valid"]
     )
     outcome_passed = prevented >= 2 and added == 0
     provider_tokens = [answer["input_tokens"] for answer in answers]
@@ -607,6 +736,11 @@ def score(key_path, answers_path):
                 for package_id, package in keyed.items()
             ),
             "max_provider_input_tokens": max(provider_tokens),
+            "all_selections_user_explicit": all_user_explicit,
+            "key_selection_metadata_matches": key_selection_metadata_matches,
+            "matching_provider_receipts": receipts_status["valid"],
+            "expected_receipt_count": receipts_status["expected_count"],
+            "completed_receipts": receipts_status["receipt_count"],
         },
         "automatic_failures_prevented": prevented,
         "additional_explicit_failures": added,
@@ -631,6 +765,145 @@ def score(key_path, answers_path):
     }
 
 
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def reproduce(artifact_dir):
+    root = Path(__file__).resolve().parent
+    artifact_dir = Path(artifact_dir)
+    report_path = artifact_dir.with_suffix(".json")
+    manifest = json.loads((artifact_dir / "checksums.json").read_text(encoding="utf-8"))
+    if manifest.get("schema_version") != 1 or manifest.get("hash_algorithm") != "sha256":
+        raise ValueError("unsupported frozen artifact manifest")
+    files = {
+        "scenarios.json": root / "scenarios.json",
+        "selections.json": root / "selections.json",
+        "scoring-key.jsonl": artifact_dir / "scoring-key.jsonl",
+        "answers.jsonl": artifact_dir / "answers.jsonl",
+        "report.json": report_path,
+    }
+    expected = manifest.get("files", {})
+    if set(expected) != set(files) or any(
+        sha256_file(path) != expected[name] for name, path in files.items()
+    ):
+        raise ValueError("frozen artifact checksum mismatch")
+    with tempfile.TemporaryDirectory() as directory:
+        prepared = Path(directory) / "prepared"
+        prepare(root / "scenarios.json", prepared, word_count, PINNED_TOKENIZER_ID, root / "selections.json")
+        if (
+            sha256_file(prepared / "packages.jsonl") != manifest.get("packages_sha256")
+            or sha256_file(prepared / "key.jsonl") != expected["scoring-key.jsonl"]
+        ):
+            raise ValueError("regenerated package or key checksum mismatch")
+    key = read_jsonl(files["scoring-key.jsonl"])
+    answers = read_jsonl(files["answers.jsonl"])
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    if len(key) != PACKAGE_COUNT or len(answers) != PACKAGE_COUNT:
+        raise ValueError("frozen answer or scoring key count mismatch")
+    keyed = {row["package_id"]: row for row in key}
+    if len(keyed) != PACKAGE_COUNT or {row["package_id"] for row in answers} != set(keyed):
+        raise ValueError("frozen answer packages do not match the scoring key")
+    frozen_runs = []
+    for answer in answers:
+        if set(answer) != {
+            "answer_sha256", "answer_status", "correct", "forbidden_emitted", "package_id", "prompt_sha256"
+        } or answer["answer_status"] != "answer_text_unavailable" or answer["answer_sha256"] is not None:
+            raise ValueError("frozen answer rows are not sanitized")
+        package = keyed[answer["package_id"]]
+        if answer["prompt_sha256"] != package["prompt_sha256"]:
+            raise ValueError("frozen answers do not match the scoring key")
+        frozen_runs.append(package | {field: answer[field] for field in ("correct", "forbidden_emitted")})
+    scenario_results = []
+    for scenario_id in sorted({row["scenario_id"] for row in frozen_runs}):
+        for condition in CONDITIONS:
+            group = [
+                row for row in frozen_runs
+                if row["scenario_id"] == scenario_id and row["condition"] == condition
+            ]
+            if len(group) != RUNS:
+                raise ValueError("frozen report requires three runs per condition")
+            correct = sum(row["correct"] for row in group) >= 2
+            forbidden = any(row["forbidden_emitted"] for row in group)
+            scenario_results.append(
+                {
+                    "scenario_id": scenario_id,
+                    "condition": condition,
+                    "runs_completed": len(group),
+                    "correct_by_majority": correct,
+                    "forbidden_or_stale_emitted": forbidden,
+                    "primary_failure": not correct or forbidden,
+                }
+            )
+    by_pair = {(row["scenario_id"], row["condition"]): row for row in scenario_results}
+    scenario_ids = sorted({row["scenario_id"] for row in scenario_results})
+    prevented = sum(
+        by_pair[(scenario_id, "automatic")]["primary_failure"]
+        and not by_pair[(scenario_id, "explicit")]["primary_failure"]
+        for scenario_id in scenario_ids
+    )
+    added = sum(
+        not by_pair[(scenario_id, "automatic")]["primary_failure"]
+        and by_pair[(scenario_id, "explicit")]["primary_failure"]
+        for scenario_id in scenario_ids
+    )
+    scenarios = load_scenarios(root / "scenarios.json")
+    selections = load_selections(root / "selections.json", scenarios)
+    all_user_explicit = set(selections) == {scenario["id"] for scenario in scenarios} and all(
+        selection["selection_kind"] == "user_explicit" for selection in selections.values()
+    )
+    key_selection_metadata_matches = all(
+        row["selection_kind"] == selections[row["scenario_id"]]["selection_kind"]
+        and row["selection_sha256"] == canonical_sha256(selections[row["scenario_id"]])
+        for row in key
+    )
+    validation = report["validation"] | {
+        "all_selections_user_explicit": all_user_explicit and key_selection_metadata_matches,
+        "completed_calls": len(answers),
+        "completed_receipts": 0,
+        "expected_answer_count": PACKAGE_COUNT,
+        "expected_receipt_count": PACKAGE_COUNT,
+        "key_selection_metadata_matches": key_selection_metadata_matches,
+        "matching_provider_receipts": False,
+    }
+    valid = (
+        all(row["tokenizer_id"] == PINNED_TOKENIZER_ID for row in key)
+        and all(row["preflight_counter_id"] == PREFLIGHT_COUNTER_ID for row in key)
+        and validation["pinned_execution"]
+        and validation["provider_input_tokens_within_ceiling"]
+        and validation["all_selections_user_explicit"]
+        and validation["matching_provider_receipts"]
+    )
+    reproduced = report | {
+        "additional_explicit_failures": added,
+        "automatic_failures_prevented": prevented,
+        "gate_passed": valid and prevented >= 2 and added == 0,
+        "outcome_threshold_met": prevented >= 2 and added == 0,
+        "run_results": [
+            {
+                "condition": row["condition"],
+                "correct": row["correct"],
+                "forbidden_emitted": row["forbidden_emitted"],
+                "prompt_sha256": row["prompt_sha256"],
+                "run": row["run"],
+                "scenario_id": row["scenario_id"],
+            }
+            for row in frozen_runs
+        ],
+        "scenario_results": scenario_results,
+        "valid_for_gate": valid,
+        "validation": validation,
+    }
+    rendered = json.dumps(reproduced, indent=2, sort_keys=True) + "\n"
+    if rendered != report_path.read_text(encoding="utf-8"):
+        raise ValueError("frozen report does not match reproduced outcomes")
+    print(rendered, end="")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -643,7 +916,11 @@ def main():
     score_parser = commands.add_parser("score", help="score completed answer rows")
     score_parser.add_argument("--key", type=Path, required=True)
     score_parser.add_argument("--answers", type=Path, required=True)
+    score_parser.add_argument("--receipts", type=Path)
+    score_parser.add_argument("--selections", type=Path)
     score_parser.add_argument("--output", type=Path)
+    reproduce_parser = commands.add_parser("reproduce", help="verify and emit the frozen report")
+    reproduce_parser.add_argument("--artifacts", type=Path, required=True)
     args = parser.parse_args()
 
     if args.command == "prepare":
@@ -651,14 +928,16 @@ def main():
             parser.error("provide both --token-counter-command and a non-words --tokenizer-id")
         counter = command_counter(args.token_counter_command) if args.token_counter_command else word_count
         prepare(args.scenarios, args.output, counter, args.tokenizer_id, args.selections)
-    else:
-        report = score(args.key, args.answers)
+    elif args.command == "score":
+        report = score(args.key, args.answers, args.receipts, args.selections)
         rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
         if args.output:
             with args.output.open("x", encoding="utf-8") as handle:
                 handle.write(rendered)
         else:
             print(rendered, end="")
+    else:
+        reproduce(args.artifacts)
 
 
 if __name__ == "__main__":

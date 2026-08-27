@@ -1,46 +1,79 @@
 {
   "schema_version": 1,
-  "selection_note": "Recorded selections from redacted workflow evidence; no source text or linkable workflow identifiers are stored here.",
+  "selection_note": "Recorded workflow observations; no user confirmation is present, and no source text or linkable workflow identifiers are stored here.",
   "selections": [
     {
       "scenario_id": "stale-approved-scope",
       "selected_source_ids": ["stale-scope-current"],
-      "recorded_from": "redacted observed decision"
+      "selection_kind": "workflow_observed",
+      "provenance": {"task_id": "not recorded in source", "session_id": "not recorded in source", "run_id": "not recorded in source"},
+      "source_artifacts": [{"source_id": "stale-scope-current", "artifact_id": "fixture-artifact-scope-current", "version": "fixture-source-v1"}],
+      "recorded_date": "not recorded in source"
     },
     {
       "scenario_id": "stale-frozen-result",
       "selected_source_ids": ["stale-result-final"],
-      "recorded_from": "redacted observed decision"
+      "selection_kind": "workflow_observed",
+      "provenance": {"task_id": "not recorded in source", "session_id": "not recorded in source", "run_id": "not recorded in source"},
+      "source_artifacts": [{"source_id": "stale-result-final", "artifact_id": "fixture-artifact-result-final", "version": "fixture-source-v1"}],
+      "recorded_date": "not recorded in source"
     },
     {
       "scenario_id": "conflicting-launch-status",
       "selected_source_ids": ["conflict-approval-boundary", "conflict-register"],
-      "recorded_from": "redacted observed decision"
+      "selection_kind": "workflow_observed",
+      "provenance": {"task_id": "not recorded in source", "session_id": "not recorded in source", "run_id": "not recorded in source"},
+      "source_artifacts": [
+        {"source_id": "conflict-approval-boundary", "artifact_id": "fixture-artifact-conflict-boundary", "version": "fixture-source-v1"},
+        {"source_id": "conflict-register", "artifact_id": "fixture-artifact-conflict-register", "version": "fixture-source-v1"}
+      ],
+      "recorded_date": "not recorded in source"
     },
     {
       "scenario_id": "conflicting-prerequisite",
       "selected_source_ids": ["conflict-committed-handoff", "conflict-working-handoff"],
-      "recorded_from": "redacted observed decision"
+      "selection_kind": "workflow_observed",
+      "provenance": {"task_id": "not recorded in source", "session_id": "not recorded in source", "run_id": "not recorded in source"},
+      "source_artifacts": [
+        {"source_id": "conflict-committed-handoff", "artifact_id": "fixture-artifact-prerequisite-earlier", "version": "fixture-source-v1"},
+        {"source_id": "conflict-working-handoff", "artifact_id": "fixture-artifact-prerequisite-later", "version": "fixture-source-v1"}
+      ],
+      "recorded_date": "not recorded in source"
     },
     {
       "scenario_id": "irrelevant-standalone-boundary",
       "selected_source_ids": ["irrelevant-boundary-rule"],
-      "recorded_from": "redacted observed decision"
+      "selection_kind": "workflow_observed",
+      "provenance": {"task_id": "not recorded in source", "session_id": "not recorded in source", "run_id": "not recorded in source"},
+      "source_artifacts": [{"source_id": "irrelevant-boundary-rule", "artifact_id": "fixture-artifact-boundary-rule", "version": "fixture-source-v1"}],
+      "recorded_date": "not recorded in source"
     },
     {
       "scenario_id": "irrelevant-plan-destination",
       "selected_source_ids": ["irrelevant-repository-request", "irrelevant-correction"],
-      "recorded_from": "redacted observed decision"
+      "selection_kind": "workflow_observed",
+      "provenance": {"task_id": "not recorded in source", "session_id": "not recorded in source", "run_id": "not recorded in source"},
+      "source_artifacts": [
+        {"source_id": "irrelevant-repository-request", "artifact_id": "fixture-artifact-plan-request", "version": "fixture-source-v1"},
+        {"source_id": "irrelevant-correction", "artifact_id": "fixture-artifact-plan-correction", "version": "fixture-source-v1"}
+      ],
+      "recorded_date": "not recorded in source"
     },
     {
       "scenario_id": "adversarial-privacy-gate",
       "selected_source_ids": ["adversarial-privacy-blocker"],
-      "recorded_from": "redacted observed decision"
+      "selection_kind": "workflow_observed",
+      "provenance": {"task_id": "not recorded in source", "session_id": "not recorded in source", "run_id": "not recorded in source"},
+      "source_artifacts": [{"source_id": "adversarial-privacy-blocker", "artifact_id": "fixture-artifact-privacy-blocker", "version": "fixture-source-v1"}],
+      "recorded_date": "not recorded in source"
     },
     {
       "scenario_id": "adversarial-handoff-authority",
       "selected_source_ids": ["adversarial-reverification-rule"],
-      "recorded_from": "redacted observed decision"
+      "selection_kind": "workflow_observed",
+      "provenance": {"task_id": "not recorded in source", "session_id": "not recorded in source", "run_id": "not recorded in source"},
+      "source_artifacts": [{"source_id": "adversarial-reverification-rule", "artifact_id": "fixture-artifact-handoff-control", "version": "fixture-source-v1"}],
+      "recorded_date": "not recorded in source"
     }
   ]
 }

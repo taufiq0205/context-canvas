@@ -1,7 +1,9 @@
 {
   "additional_explicit_failures": 0,
+  "answer_artifact_limitation": "Only sanitized measured outcomes are frozen; raw answer text and answer hashes are unavailable.",
   "answer_count": 48,
   "automatic_failures_prevented": 0,
+  "execution_receipts_limitation": "No genuine provider execution receipt file is available; answer metadata does not validate execution.",
   "gate_passed": false,
   "metrics": {
     "automatic": {
@@ -539,15 +541,21 @@
       "scenario_id": "stale-frozen-result"
     }
   ],
+  "selection_provenance_limitation": "All eight committed selections are workflow_observed; user confirmation for user_explicit selections is unavailable.",
   "settings": {
     "reasoning_effort": "low",
     "temperature": 0
   },
   "tokenizer_id": "gpt-5.6-sol-provider-input-v1",
-  "valid_for_gate": true,
+  "valid_for_gate": false,
   "validation": {
+    "all_selections_user_explicit": false,
     "completed_calls": 48,
+    "completed_receipts": 0,
     "expected_answer_count": 48,
+    "expected_receipt_count": 48,
+    "key_selection_metadata_matches": true,
+    "matching_provider_receipts": false,
     "max_provider_input_tokens": 21417,
     "pinned_execution": true,
     "provider_input_tokens_within_ceiling": true,
