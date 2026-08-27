@@ -1,0 +1,17 @@
+{
+  "checks": {
+    "all_selections_user_explicit": true,
+    "answers_hidden_from_destination": true,
+    "confirmed_selection_file": true,
+    "explicit_automatic_packages_differ": true,
+    "json_answer_format": true,
+    "package_count": true,
+    "same_confirmed_selections": true,
+    "same_expected_forbidden": true,
+    "same_scenario_ids": true,
+    "same_source_evidence": true,
+    "v1_files_byte_identical": true,
+    "v2_schema": true
+  },
+  "schema_version": 2
+}

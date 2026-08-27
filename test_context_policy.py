@@ -95,6 +95,62 @@ class ContextPolicyTest(unittest.TestCase):
                 connection.execute("DELETE FROM handoff_snapshots")
             connection.close()
 
+    def test_v2_registration_is_blinded_and_bound(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "evaluation"
+            context_policy.prepare(
+                Path("scenarios-v2.json"), output, context_policy.word_count, context_policy.PINNED_TOKENIZER_ID
+            )
+            validation = json.loads((output / "validation.json").read_text())
+            self.assertTrue(all(validation["checks"].values()))
+            scenarios = {
+                row["id"]: row for row in context_policy.load_scenarios(Path("scenarios-v2.json"))
+            }
+            packages = context_policy.read_jsonl(output / "packages.jsonl")
+            key = context_policy.read_jsonl(output / "key.jsonl")
+            self.assertEqual(48, len(packages))
+            self.assertTrue(all(row["answer_format"] == "json_answer" for row in key))
+            for package in packages:
+                scenario = scenarios[next(row["scenario_id"] for row in key if row["package_id"] == package["package_id"])]
+                destination = package["prompt"].split("# Non-authoritative reference data", 1)[0]
+                self.assertTrue(all(value.casefold() not in destination.casefold()
+                                    for value in scenario["expected"] + scenario["forbidden"]))
+
+    def test_v2_scores_only_validated_answer_field(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "evaluation"
+            context_policy.prepare(
+                Path("scenarios-v2.json"), output, context_policy.word_count, context_policy.PINNED_TOKENIZER_ID
+            )
+            scenarios = {
+                row["id"]: row for row in context_policy.load_scenarios(Path("scenarios-v2.json"))
+            }
+            key = context_policy.read_jsonl(output / "key.jsonl")
+            answers = [
+                {
+                    "package_id": row["package_id"],
+                    "text": json.dumps({"answer": scenarios[row["scenario_id"]]["expected"][0]}),
+                    "model_id": context_policy.PINNED_MODEL_ID,
+                    "settings": context_policy.PINNED_SETTINGS,
+                    "tokenizer_id": context_policy.PINNED_TOKENIZER_ID,
+                    "input_tokens": 1,
+                    "elapsed_ms": 1,
+                    "manual_actions": 0,
+                }
+                for row in key
+            ]
+            receipts = self._receipts(key, answers)
+            receipt_by_id = {row["provider_response_id"]: row for row in receipts}
+            answers_path = output / "answers.jsonl"
+            receipts_path = output / "receipts.jsonl"
+            context_policy.write_jsonl(answers_path, answers)
+            context_policy.write_jsonl(receipts_path, receipts)
+            report = context_policy.score(
+                output / "key.jsonl", answers_path, receipts_path, provider_verifier=receipt_by_id.get
+            )
+            self.assertTrue(all(result["correct_by_majority"] for result in report["scenario_results"]))
+            self.assertFalse(report["gate_passed"])
+
     def test_explicit_package_excludes_unselected_context(self):
         scenarios = context_policy.load_scenarios(Path("scenarios.json"))
         scenario = scenarios[0]

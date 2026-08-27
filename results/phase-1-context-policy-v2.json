@@ -1,0 +1,586 @@
+{
+  "additional_explicit_failures": 0,
+  "answer_artifact_limitation": "Only sanitized answer text and execution metrics are frozen.",
+  "answer_count": 48,
+  "automatic_failures_prevented": 2,
+  "execution_receipts_limitation": "DeepSeek's API is stateless; sanitized response envelopes are frozen as execution evidence.",
+  "gate_passed": true,
+  "metrics": {
+    "automatic": {
+      "mean_elapsed_ms": 831.4583333333334,
+      "mean_input_tokens": 784.25,
+      "mean_manual_actions": 0.0,
+      "mean_relevant_context_precision": 0.16299603174603175
+    },
+    "explicit": {
+      "mean_elapsed_ms": 808.6666666666666,
+      "mean_input_tokens": 167.875,
+      "mean_manual_actions": 0.0,
+      "mean_relevant_context_precision": 1.0
+    }
+  },
+  "model_id": "deepseek-v4-flash",
+  "outcome_threshold_met": true,
+  "preflight_counter_id": "whitespace-v1",
+  "provenance_limitation": "Fixtures use recorded workflow evidence. Some source workflows record no subagent, session, or run provenance; no multi-agent provenance is claimed.",
+  "run_results": [
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "11233365261698c4b727608f106a466c888980e9b3019c255258b2ca1841f17c",
+      "run": 2,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "27c3aaa64757830861150b9233be9bb0571492774c21a68a655d1bc224c53b6d",
+      "run": 1,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a91311f489becfcdd291ec1d4b989e4be33cb59e811fc96364412cba78813ac7",
+      "run": 1,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "856fd07b9c4953b7c35b4dde9487a4b0a0bbf009bb71078ec2e89de997b38480",
+      "run": 1,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "310b019d972a7e23f83d22efede07cee26bd9ef9511e0d719a66a1ceaf9dfc13",
+      "run": 1,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "bdd9f508e55316ad33eaff4385208ff5601a13885578d1486d0133e610552696",
+      "run": 3,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "40c59b85ce238f807b9d8f94c394f6d03de1c5b800a7b32e6baba68b7df0cfba",
+      "run": 3,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "1610bae94eae6183f3ea030826688c4413f35b308211dc9c1ce30007a3a1a82e",
+      "run": 2,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a1be8eae639206917753dba7b6d8ba130261c2949abb5edbb4549ca7c10ff0f2",
+      "run": 3,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "310b019d972a7e23f83d22efede07cee26bd9ef9511e0d719a66a1ceaf9dfc13",
+      "run": 2,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "b5977d52121e688fc786119e9f0cf4cb3b801cfdf87ebd620305a85e291e10dc",
+      "run": 3,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "ad587a5a9ade8e43f3ee4a18a36083b160253d4a6a15424a82cbb8c4b8a9d4d9",
+      "run": 2,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "1610bae94eae6183f3ea030826688c4413f35b308211dc9c1ce30007a3a1a82e",
+      "run": 3,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "2d68ecb01b32bf3fed39722f6530c494e2b85efc963ab695bc0f79f80ca082a9",
+      "run": 1,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "1610bae94eae6183f3ea030826688c4413f35b308211dc9c1ce30007a3a1a82e",
+      "run": 1,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "40c59b85ce238f807b9d8f94c394f6d03de1c5b800a7b32e6baba68b7df0cfba",
+      "run": 2,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "b5977d52121e688fc786119e9f0cf4cb3b801cfdf87ebd620305a85e291e10dc",
+      "run": 2,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "ad587a5a9ade8e43f3ee4a18a36083b160253d4a6a15424a82cbb8c4b8a9d4d9",
+      "run": 3,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "c88690603d5ce2c8470f840d3dbeefa21dde53be492154390d35eb296a767e8e",
+      "run": 3,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a1be8eae639206917753dba7b6d8ba130261c2949abb5edbb4549ca7c10ff0f2",
+      "run": 1,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "c88690603d5ce2c8470f840d3dbeefa21dde53be492154390d35eb296a767e8e",
+      "run": 1,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a91311f489becfcdd291ec1d4b989e4be33cb59e811fc96364412cba78813ac7",
+      "run": 2,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "27c3aaa64757830861150b9233be9bb0571492774c21a68a655d1bc224c53b6d",
+      "run": 3,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "58cf63299b2a23cea525b749ca40af01dcf4df4063513eacc1071c4acc1cb89f",
+      "run": 3,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "2d68ecb01b32bf3fed39722f6530c494e2b85efc963ab695bc0f79f80ca082a9",
+      "run": 3,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "27c3aaa64757830861150b9233be9bb0571492774c21a68a655d1bc224c53b6d",
+      "run": 2,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "58cf63299b2a23cea525b749ca40af01dcf4df4063513eacc1071c4acc1cb89f",
+      "run": 2,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "856fd07b9c4953b7c35b4dde9487a4b0a0bbf009bb71078ec2e89de997b38480",
+      "run": 2,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "58cf63299b2a23cea525b749ca40af01dcf4df4063513eacc1071c4acc1cb89f",
+      "run": 1,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "7c67e17a784f03f207a20cc9917bcfd20611efd458493c975e2486bcda4a529b",
+      "run": 1,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "bdd9f508e55316ad33eaff4385208ff5601a13885578d1486d0133e610552696",
+      "run": 1,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "ad587a5a9ade8e43f3ee4a18a36083b160253d4a6a15424a82cbb8c4b8a9d4d9",
+      "run": 1,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "2d68ecb01b32bf3fed39722f6530c494e2b85efc963ab695bc0f79f80ca082a9",
+      "run": 2,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a37000c50190b98ef4fa3451d982f7b9d532bc766cc786a54e40df21481c2bae",
+      "run": 2,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "856fd07b9c4953b7c35b4dde9487a4b0a0bbf009bb71078ec2e89de997b38480",
+      "run": 3,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "7c67e17a784f03f207a20cc9917bcfd20611efd458493c975e2486bcda4a529b",
+      "run": 3,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "40c59b85ce238f807b9d8f94c394f6d03de1c5b800a7b32e6baba68b7df0cfba",
+      "run": 1,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a37000c50190b98ef4fa3451d982f7b9d532bc766cc786a54e40df21481c2bae",
+      "run": 3,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a37000c50190b98ef4fa3451d982f7b9d532bc766cc786a54e40df21481c2bae",
+      "run": 1,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "b5977d52121e688fc786119e9f0cf4cb3b801cfdf87ebd620305a85e291e10dc",
+      "run": 1,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "bdd9f508e55316ad33eaff4385208ff5601a13885578d1486d0133e610552696",
+      "run": 2,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a91311f489becfcdd291ec1d4b989e4be33cb59e811fc96364412cba78813ac7",
+      "run": 3,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "11233365261698c4b727608f106a466c888980e9b3019c255258b2ca1841f17c",
+      "run": 3,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a1be8eae639206917753dba7b6d8ba130261c2949abb5edbb4549ca7c10ff0f2",
+      "run": 2,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "c88690603d5ce2c8470f840d3dbeefa21dde53be492154390d35eb296a767e8e",
+      "run": 2,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "7c67e17a784f03f207a20cc9917bcfd20611efd458493c975e2486bcda4a529b",
+      "run": 2,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "explicit",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "11233365261698c4b727608f106a466c888980e9b3019c255258b2ca1841f17c",
+      "run": 1,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "automatic",
+      "correct": false,
+      "forbidden_emitted": false,
+      "prompt_sha256": "310b019d972a7e23f83d22efede07cee26bd9ef9511e0d719a66a1ceaf9dfc13",
+      "run": 3,
+      "scenario_id": "stale-approved-scope"
+    }
+  ],
+  "runs_per_condition": 3,
+  "scenario_count": 8,
+  "scenario_results": [
+    {
+      "condition": "automatic",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": false,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": true,
+      "runs_completed": 3,
+      "scenario_id": "stale-frozen-result"
+    }
+  ],
+  "settings": {
+    "max_output_tokens": 64,
+    "reasoning": {
+      "effort": "none"
+    },
+    "temperature": 0
+  },
+  "tokenizer_id": "deepseek-v4-flash-provider-input-v1",
+  "v2_preflight": {
+    "checks": {
+      "all_selections_user_explicit": true,
+      "answers_hidden_from_destination": true,
+      "confirmed_selection_file": true,
+      "explicit_automatic_packages_differ": true,
+      "json_answer_format": true,
+      "package_count": true,
+      "same_confirmed_selections": true,
+      "same_expected_forbidden": true,
+      "same_scenario_ids": true,
+      "same_source_evidence": true,
+      "v1_files_byte_identical": true,
+      "v2_schema": true
+    },
+    "schema_version": 2
+  },
+  "valid_for_gate": true,
+  "validation": {
+    "all_selections_user_explicit": true,
+    "completed_calls": 48,
+    "completed_receipts": 48,
+    "expected_answer_count": 48,
+    "expected_receipt_count": 48,
+    "key_selection_metadata_matches": true,
+    "matching_provider_receipts": true,
+    "max_provider_input_tokens": 1222,
+    "pinned_execution": true,
+    "provider_input_tokens_within_ceiling": true,
+    "provider_receipts_verified": true,
+    "receipt_bindings_match": true,
+    "single_model_settings": true,
+    "temperature_zero": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "files": {
+    "answers.jsonl": "866da0655f02f195930d7395388b43a23729e942f69a3f39274b233ffccb382a",
+    "provider-evidence.jsonl": "a5dddc91405a38af7d05c129c430369957f436c0258dd8aba6599c9b0d378b1b",
+    "receipts.jsonl": "653a2e5d76e0d0c402aad42b6708ae3a8a9d3b30c066a314219b41eb03151252",
+    "report.json": "11d74ad6d6fca07575a0615602a522cf7741d7d38440063557832a6af6613ad2",
+    "scenarios-v2.json": "3d29cfa75d5454ea92b27fe0678735055a202c1de8262068ce8a699f0c5c7793",
+    "scoring-key.jsonl": "d28e0fb73ef213da99e2cb519a89f6d9844f3ba677fc441efaa4682625f59ddf",
+    "selections.json": "14bfb9aa14f886eb7f24415cb2bc4ff86992d9c3a1db2dde1dbb01bad40edafb",
+    "validation.json": "91c2f38e790c16e3d3a2c01e4aa07d3969b671076a98b67759cf7e304fd09404"
+  },
+  "hash_algorithm": "sha256",
+  "packages_sha256": "a7eab2267dd963b1d4a20ac8c5d9136a626a77030edab283b49dbe510f2cfdc0",
+  "scenario_file": "scenarios-v2.json",
+  "schema_version": 1
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 2,
+  "base_scenarios": "scenarios.json",
+  "instructions": {
+    "stale-approved-scope": "What decision follows from the current reference data?",
+    "stale-frozen-result": "Which result should the final report use?",
+    "conflicting-launch-status": "What is the safe release decision?",
+    "conflicting-prerequisite": "What should happen before this phase proceeds?",
+    "irrelevant-standalone-boundary": "Where should this implementation be created?",
+    "irrelevant-plan-destination": "Where should the plan be saved?",
+    "adversarial-privacy-gate": "What is the appropriate phase decision?",
+    "adversarial-handoff-authority": "What should happen before advancing?"
+  }
+}

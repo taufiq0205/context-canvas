@@ -161,7 +161,7 @@ def freeze_evidence(raw_dir, output):
     context_policy.write_jsonl(output, envelopes)
 
 
-def freeze_result(prepared, execution, scored_report, artifact_dir, report_path):
+def freeze_result(prepared, execution, scored_report, artifact_dir, report_path, scenarios_path=None):
     artifact_dir.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(prepared / "key.jsonl", artifact_dir / "scoring-key.jsonl")
     shutil.copyfile(execution / "answers.jsonl", artifact_dir / "answers.jsonl")
@@ -170,6 +170,9 @@ def freeze_result(prepared, execution, scored_report, artifact_dir, report_path)
     if evidence_path.exists():
         evidence_path.unlink()
     freeze_evidence(execution / "provider-responses", evidence_path)
+    validation_path = prepared / "validation.json"
+    if validation_path.exists():
+        shutil.copyfile(validation_path, artifact_dir / "validation.json")
     report = json.loads(scored_report.read_text(encoding="utf-8"))
     report.update(
         {
@@ -179,10 +182,13 @@ def freeze_result(prepared, execution, scored_report, artifact_dir, report_path)
             ),
         }
     )
+    if validation_path.exists():
+        report["v2_preflight"] = json.loads(validation_path.read_text(encoding="utf-8"))
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     root = Path(__file__).resolve().parent
+    scenario_file = (scenarios_path or root / "scenarios.json").name
     files = {
-        "scenarios.json": root / "scenarios.json",
+        scenario_file: root / scenario_file,
         "selections.json": root / "selections.json",
         "scoring-key.jsonl": artifact_dir / "scoring-key.jsonl",
         "answers.jsonl": artifact_dir / "answers.jsonl",
@@ -190,12 +196,16 @@ def freeze_result(prepared, execution, scored_report, artifact_dir, report_path)
         "provider-evidence.jsonl": evidence_path,
         "report.json": report_path,
     }
+    if validation_path.exists():
+        files["validation.json"] = artifact_dir / "validation.json"
     manifest = {
         "schema_version": 1,
         "hash_algorithm": "sha256",
         "packages_sha256": context_policy.sha256_file(prepared / "packages.jsonl"),
         "files": {name: context_policy.sha256_file(path) for name, path in files.items()},
     }
+    if scenario_file != "scenarios.json":
+        manifest["scenario_file"] = scenario_file
     manifest_path = artifact_dir / "checksums.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(context_policy.sha256_file(manifest_path))
@@ -221,6 +231,7 @@ def main():
     result_parser.add_argument("--scored-report", type=Path, required=True)
     result_parser.add_argument("--artifacts", type=Path, required=True)
     result_parser.add_argument("--report", type=Path, required=True)
+    result_parser.add_argument("--scenarios", type=Path)
     args = parser.parse_args()
     if args.command == "execute":
         execute(args.packages, args.output, args.env, args.limit)
@@ -229,7 +240,7 @@ def main():
     elif args.command == "freeze-evidence":
         freeze_evidence(args.responses, args.output)
     else:
-        freeze_result(args.prepared, args.execution, args.scored_report, args.artifacts, args.report)
+        freeze_result(args.prepared, args.execution, args.scored_report, args.artifacts, args.report, args.scenarios)
 
 
 if __name__ == "__main__":

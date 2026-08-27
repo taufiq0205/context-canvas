@@ -63,6 +63,30 @@ Scoring requires exactly 48 unique answers and exactly 48 matching, independentl
 
 The committed result artifact contains sanitized answer text, provider evidence, validation status, pinned execution metadata, hashes, and aggregate metrics, but no prompts, source text, private paths, credentials, or workflow identifiers. The run is valid, but the gate failed because explicit selection prevented no automatic failures. Canvas work remains blocked.
 
+## v2 registration
+
+Issue #5 uses `scenarios-v2.json`, a small overlay over the immutable `scenarios.json`. It changes only the eight destination questions and adds a JSON answer envelope; source evidence, expected/forbidden scoring values, and `selections.json` remain bound to the canonical fixtures. The model sees neutral destination questions and is told to return exactly `{"answer":"..."}`. Scoring parses that field and ignores no longer relevant envelope text.
+
+Prepare v2 with the same preflight counter and pinned provider-input tokenizer:
+
+```bash
+RUN_ROOT=$(mktemp -d)
+python3 context_policy.py prepare \
+  --scenarios scenarios-v2.json \
+  --selections selections.json \
+  --output "$RUN_ROOT/prepared" \
+  --token-counter-command "python3 -c 'import sys; print(len(sys.stdin.read().split()))'" \
+  --tokenizer-id deepseek-v4-flash-provider-input-v1
+```
+
+Preparation stops unless `validation.json` proves destination-answer hiding, unchanged confirmed selections and source evidence, differing explicit/automatic packages, unchanged v1 checksums, and 48 unique packages. Keep the scoring key private from execution. Execute the packages through the same pinned DeepSeek runner, score with independently verified receipts, and freeze to `results/phase-1-context-policy-v2/` using `deepseek_run.py freeze-result --scenarios scenarios-v2.json`. Reproduce with:
+
+```bash
+python3 context_policy.py reproduce --artifacts results/phase-1-context-policy-v2
+```
+
+The ADR threshold is unchanged: canvas work is unblocked only when v2 is valid and explicit selection prevents at least two automatic scenario failures without adding any primary failures. A valid negative v2 result is terminal evidence for this experiment.
+
 ## Offline reproduction
 
 Run this exact offline command from the repository root:
