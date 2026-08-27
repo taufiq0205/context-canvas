@@ -1,0 +1,91 @@
+# Context
+
+## Research scope
+
+- First gate: a small experiment, not the full five-week research plan.
+- Initial participant: one developer who regularly uses multi-agent, multi-session, skill-driven, customized workflows.
+- Initial purpose: improve that developer's own workflow.
+- Later audience hypothesis: other developers who regularly use multi-agent development workflows.
+- The first gate cannot establish broader market demand.
+- Primary failure: wrong, stale, or unselected context crossing between development work units.
+- Product boundary: manage context planning, inspection, and handoff; do not execute or orchestrate agents in the first gate.
+- Workflow: the graph containing development work.
+- Task: the durable node and unit of intent.
+- Session/run: an execution attempt recorded within a task.
+- Agent: the executor assigned to a run.
+- Skill: execution configuration attached to a task or run.
+- Artifact: task input or output, attached rather than modeled as a node initially.
+- First-gate guarantee: unselected context is absent from the generated handoff package.
+- Explicitly excluded guarantee: preventing an external agent runtime from independently accessing repository files, memories, or sessions.
+- Use "context inclusion control," not "authorization," for the first-gate capability.
+- Edge: a directed context-flow permission. `A -> B` means task B may receive explicitly selected context from task A.
+- Edges do not represent execution order or blocking dependencies; those remain in the existing issue tracker.
+- Edge payload: user-selected transcript excerpts and artifacts, preserved verbatim.
+- A summary has no special edge behavior; it may cross only as an ordinary selected artifact.
+- Payload selection is always explicit user action in the first gate.
+- Automatic retrieval exists only as an experimental comparison condition.
+- A destination run keeps the exact context snapshot it consumed.
+- When consumed source content changes, the destination task shows `upstream context changed`; its historical run remains valid and unchanged.
+- Refresh means manually generating a new handoff package. It never reruns an agent.
+- Unrelated source-task changes do not create a freshness warning.
+- Removing an edge prevents future handoffs but preserves historical snapshots.
+- Explicit content deletion removes its stored snapshots and marks affected historical runs non-reproducible.
+- Conflicting inputs remain separate with source and version labels; the tool does not merge, prioritize, or resolve them.
+- A change to consumed content marks its direct consumer outdated and transitively marks descendants potentially outdated.
+- Changes outside the consumed selection do not trigger freshness warnings.
+- Freshness warnings never mutate handoffs or rerun agents.
+- Context does not pass transitively: with `A -> B -> C`, C receives selected content from B only. Add `A -> C` for direct access.
+- The context graph is acyclic. Iteration uses new runs or tasks.
+- A task may receive separately labeled context from multiple source tasks.
+- A generated handoff is a portable Markdown file.
+- Before export, users see the exact assembled content with source task, run, artifact, and version labels.
+- Source order is deterministic and visible.
+- Over-budget handoffs are blocked with the excess shown; content is never silently truncated, summarized, or reordered.
+- Initial ingestion supports pasted transcripts and selected local files only.
+- Provider APIs and IDE integrations are excluded from the first gate.
+- Only the destination task defines instructions.
+- Incoming edge content is labeled non-authoritative reference data, even when it contains imperative text.
+- Promoting inherited text into destination instructions requires explicit user action.
+- SQLite stores tasks, edges, selections, versions, and handoff snapshots locally.
+- SQLite FTS5 supplies the first automatic-retrieval baseline.
+- No vector database or embeddings are added until measured retrieval failures justify them.
+- The first gate tests context policy, not canvas usability.
+- The overall product direction remains UI-focused.
+- A canvas prototype begins only after the context-policy gate passes.
+- The first gate compares explicit user-selected edge content against automatic SQLite FTS5 retrieval.
+- Both conditions use identical stale, conflicting, irrelevant, and adversarial scenarios.
+- Isolated and full-history controls are excluded because the first gate only decides explicit versus automatic selection.
+- The corpus contains eight paired scenarios derived from real multi-agent work: two each for stale, conflicting, irrelevant, and adversarial context.
+- Sensitive information is redacted before inclusion.
+- Each paired comparison uses the same destination model, model version, inference settings, eligible corpus, and token ceiling.
+- Source artifacts may originate from different models.
+- Cross-model replication happens only after the initial policy gate.
+- Primary outcomes are task correctness and use or emission of prohibited or stale context.
+- Secondary outcomes are relevant-context precision, input tokens, total task time, and manual actions.
+- The gate does not use a single subjective quality score.
+- The policy gate passes only if explicit selection prevents at least two failures produced by automatic retrieval and introduces no additional primary-outcome failures.
+- Expected facts and forbidden facts are defined before execution.
+- Checks are automated where possible; remaining output scoring hides condition labels.
+- Automatic retrieval queries FTS5 with the destination task title and instructions, searches all eligible prior content, and selects top chunks up to the shared token ceiling.
+- Automatic and explicit packages use identical formatting and source labels.
+- Each of eight scenarios runs three times under each policy using deterministic settings: 48 model calls total.
+- Correctness is aggregated per scenario by majority across three runs.
+- Any prohibited or stale-context use across the three runs fails that scenario.
+- The pass rule counts scenario-level failures, not individual model calls.
+- If the policy gate passes, the canvas tests whether users can predict included context, inspect sources, understand freshness warnings, revoke edges, and export correct handoffs without coaching.
+- The first canvas contains task nodes, directed context edges, an edge-selection inspector, an exact handoff preview, and direct/potential freshness badges.
+- The prototype is a local desktop-browser app.
+- Accounts, collaboration, cloud sync, and mobile are excluded.
+- First-use onboarding is a preloaded `Research authentication -> Implement login -> Test login` canvas with a five-step checklist covering selection, preview, upstream change, freshness, refresh or revocation, and export.
+- No tutorial framework or modal tour is added.
+- After onboarding, canvas comprehension passes at four of five uncoached tasks: predict context, locate a source, update selection, interpret freshness, and revoke or export.
+- The first canvas supports up to 40 task nodes and makes no scalability claim beyond that.
+- Initial navigation is manual layout, pan, zoom, fit-to-view, and title search.
+- Automatic layout is deferred until observed pain justifies it.
+- Automatic retrieval searches every non-deleted source item in the local workspace except the destination task itself; graph edges do not restrict it.
+- The prototypes export individual handoffs as Markdown and rely on copying the SQLite file for workspace backup.
+- Open JSON workspace import/export is deferred until after canvas validation.
+
+## Open decisions
+
+- None.
