@@ -19,10 +19,11 @@ CONDITIONS = ("automatic", "explicit")
 SELECTION_KINDS = {"user_explicit", "workflow_observed", "inferred"}
 RUNS = 3
 PACKAGE_COUNT = 8 * len(CONDITIONS) * RUNS
-PINNED_MODEL_ID = "gpt-5.6-sol"
-PINNED_TOKENIZER_ID = "gpt-5.6-sol-provider-input-v1"
+PINNED_MODEL_ID = "deepseek-v4-flash"
+PINNED_TOKENIZER_ID = "deepseek-v4-flash-provider-input-v1"
 PREFLIGHT_COUNTER_ID = "whitespace-v1"
-PINNED_SETTINGS = {"reasoning_effort": "low", "temperature": 0}
+PINNED_SETTINGS = {"max_output_tokens": 64, "reasoning": {"effort": "none"}, "temperature": 0}
+FROZEN_MANIFEST_SHA256 = "f61faa1b6f5a8bd8a889761c768a068d19bd0cff64dfe863d78e9da2ae703dc8"
 PROVENANCE_LIMITATION = (
     "Fixtures use recorded workflow evidence. Some source workflows record no subagent, "
     "session, or run provenance; no multi-agent provenance is claimed."
@@ -80,6 +81,18 @@ def command_counter(command):
         return int(result.stdout.strip())
 
     return count
+
+
+def command_receipt_verifier(command):
+    argv = shlex.split(command)
+    if not argv:
+        raise ValueError("receipt verifier command is empty")
+
+    def verify(response_id):
+        result = subprocess.run(argv + [response_id], text=True, capture_output=True, check=True)
+        return json.loads(result.stdout)
+
+    return verify
 
 
 def load_scenarios(path):
@@ -497,6 +510,40 @@ def normalized_answer(text):
     return re.sub(r"[.!?]+$", "", " ".join(text.strip().casefold().split()))
 
 
+def summarize_runs(runs):
+    scenario_results = []
+    scenario_ids = sorted({row["scenario_id"] for row in runs})
+    for scenario_id in scenario_ids:
+        for condition in CONDITIONS:
+            group = [row for row in runs if row["scenario_id"] == scenario_id and row["condition"] == condition]
+            if len(group) != RUNS:
+                raise ValueError(f"scenario {scenario_id} requires exactly {RUNS} runs per condition")
+            correct = sum(row["correct"] for row in group) >= 2
+            forbidden = any(row["forbidden_emitted"] for row in group)
+            scenario_results.append(
+                {
+                    "scenario_id": scenario_id,
+                    "condition": condition,
+                    "runs_completed": len(group),
+                    "correct_by_majority": correct,
+                    "forbidden_or_stale_emitted": forbidden,
+                    "primary_failure": not correct or forbidden,
+                }
+            )
+    by_pair = {(row["scenario_id"], row["condition"]): row for row in scenario_results}
+    prevented = sum(
+        by_pair[(scenario_id, "automatic")]["primary_failure"]
+        and not by_pair[(scenario_id, "explicit")]["primary_failure"]
+        for scenario_id in scenario_ids
+    )
+    added = sum(
+        not by_pair[(scenario_id, "automatic")]["primary_failure"]
+        and by_pair[(scenario_id, "explicit")]["primary_failure"]
+        for scenario_id in scenario_ids
+    )
+    return scenario_ids, scenario_results, prevented, added
+
+
 def validate_answer(row):
     required = {
         "package_id": str,
@@ -528,7 +575,7 @@ def receipt_failure(receipts, failure):
     }
 
 
-def receipt_validation(receipts, key, answered):
+def receipt_validation(receipts, key, answered, provider_verifier=None):
     if len(receipts) != PACKAGE_COUNT:
         return receipt_failure(receipts, "missing_or_incomplete_receipts")
     seen_packages = set()
@@ -544,6 +591,7 @@ def receipt_validation(receipts, key, answered):
         "input_tokens": (int, float),
         "completed_at": str,
     }
+    verified = []
     for receipt in receipts:
         if not isinstance(receipt, dict) or any(
             field not in receipt or not isinstance(receipt[field], expected)
@@ -584,12 +632,35 @@ def receipt_validation(receipts, key, answered):
             return receipt_failure(receipts, "receipt_does_not_match_answer_or_package")
         seen_packages.add(package_id)
         seen_responses.add(response_id)
+        if provider_verifier:
+            try:
+                provider_record = provider_verifier(response_id)
+            except (OSError, subprocess.SubprocessError, ValueError, json.JSONDecodeError):
+                return receipt_failure(receipts, "provider_verification_failed")
+            provider_fields = {
+                "provider_response_id", "answer_sha256", "model_id", "settings",
+                "tokenizer_id", "input_tokens", "completed_at",
+            }
+            verified.append(
+                isinstance(provider_record, dict)
+                and provider_fields <= provider_record.keys()
+                and all(provider_record[field] == receipt[field] for field in provider_fields)
+            )
     if seen_packages != set(key):
         return receipt_failure(receipts, "receipt_package_set_mismatch")
-    return {"valid": True, "expected_count": PACKAGE_COUNT, "receipt_count": len(receipts)}
+    if provider_verifier is None or not all(verified):
+        status = receipt_failure(receipts, "provider_verification_unavailable")
+        status["bindings_match"] = True
+        return status
+    return {
+        "valid": True,
+        "bindings_match": True,
+        "expected_count": PACKAGE_COUNT,
+        "receipt_count": len(receipts),
+    }
 
 
-def score(key_path, answers_path, receipts_path=None, selections_path=None):
+def score(key_path, answers_path, receipts_path=None, selections_path=None, provider_verifier=None):
     key = read_jsonl(key_path)
     answers = read_jsonl(answers_path)
     receipts = read_jsonl(receipts_path) if receipts_path and receipts_path.exists() else []
@@ -601,7 +672,7 @@ def score(key_path, answers_path, receipts_path=None, selections_path=None):
     answered = {row["package_id"]: row for row in answers}
     if len(keyed) != len(key) or len(answered) != len(answers) or set(answered) != set(keyed):
         raise ValueError("answers must contain each prepared package exactly once")
-    receipts_status = receipt_validation(receipts, keyed, answered)
+    receipts_status = receipt_validation(receipts, keyed, answered, provider_verifier)
     fingerprints = {
         (
             row["model_id"],
@@ -641,37 +712,7 @@ def score(key_path, answers_path, receipts_path=None, selections_path=None):
             }
         )
 
-    scenario_results = []
-    for scenario_id in sorted({row["scenario_id"] for row in runs}):
-        for condition in CONDITIONS:
-            group = [row for row in runs if row["scenario_id"] == scenario_id and row["condition"] == condition]
-            if len(group) != RUNS:
-                raise ValueError(f"scenario {scenario_id} requires exactly {RUNS} runs per condition")
-            correct = sum(row["correct"] for row in group) >= 2
-            forbidden = any(row["forbidden_emitted"] for row in group)
-            scenario_results.append(
-                {
-                    "scenario_id": scenario_id,
-                    "condition": condition,
-                    "runs_completed": len(group),
-                    "correct_by_majority": correct,
-                    "forbidden_or_stale_emitted": forbidden,
-                    "primary_failure": not correct or forbidden,
-                }
-            )
-
-    by_pair = {(row["scenario_id"], row["condition"]): row for row in scenario_results}
-    scenario_ids = sorted({row["scenario_id"] for row in scenario_results})
-    prevented = sum(
-        by_pair[(scenario_id, "automatic")]["primary_failure"]
-        and not by_pair[(scenario_id, "explicit")]["primary_failure"]
-        for scenario_id in scenario_ids
-    )
-    added = sum(
-        not by_pair[(scenario_id, "automatic")]["primary_failure"]
-        and by_pair[(scenario_id, "explicit")]["primary_failure"]
-        for scenario_id in scenario_ids
-    )
+    scenario_ids, scenario_results, prevented, added = summarize_runs(runs)
     metrics = {}
     for condition in CONDITIONS:
         group = [row for row in runs if row["condition"] == condition]
@@ -739,6 +780,8 @@ def score(key_path, answers_path, receipts_path=None, selections_path=None):
             "all_selections_user_explicit": all_user_explicit,
             "key_selection_metadata_matches": key_selection_metadata_matches,
             "matching_provider_receipts": receipts_status["valid"],
+            "receipt_bindings_match": receipts_status.get("bindings_match", False),
+            "provider_receipts_verified": receipts_status["valid"],
             "expected_receipt_count": receipts_status["expected_count"],
             "completed_receipts": receipts_status["receipt_count"],
         },
@@ -777,7 +820,10 @@ def reproduce(artifact_dir):
     root = Path(__file__).resolve().parent
     artifact_dir = Path(artifact_dir)
     report_path = artifact_dir.with_suffix(".json")
-    manifest = json.loads((artifact_dir / "checksums.json").read_text(encoding="utf-8"))
+    manifest_path = artifact_dir / "checksums.json"
+    if sha256_file(manifest_path) != FROZEN_MANIFEST_SHA256:
+        raise ValueError("frozen checksum manifest does not match the trusted revision")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("schema_version") != 1 or manifest.get("hash_algorithm") != "sha256":
         raise ValueError("unsupported frozen artifact manifest")
     files = {
@@ -785,6 +831,8 @@ def reproduce(artifact_dir):
         "selections.json": root / "selections.json",
         "scoring-key.jsonl": artifact_dir / "scoring-key.jsonl",
         "answers.jsonl": artifact_dir / "answers.jsonl",
+        "receipts.jsonl": artifact_dir / "receipts.jsonl",
+        "provider-evidence.jsonl": artifact_dir / "provider-evidence.jsonl",
         "report.json": report_path,
     }
     expected = manifest.get("files", {})
@@ -802,102 +850,44 @@ def reproduce(artifact_dir):
             raise ValueError("regenerated package or key checksum mismatch")
     key = read_jsonl(files["scoring-key.jsonl"])
     answers = read_jsonl(files["answers.jsonl"])
-    report = json.loads(report_path.read_text(encoding="utf-8"))
-    if len(key) != PACKAGE_COUNT or len(answers) != PACKAGE_COUNT:
-        raise ValueError("frozen answer or scoring key count mismatch")
+    if any(not isinstance(answer.get("text"), str) or not answer.get("answer_sha256") for answer in answers):
+        raise ValueError(
+            "independent reproduction unavailable: frozen answer text, hashes, and per-run metrics are missing"
+        )
     keyed = {row["package_id"]: row for row in key}
-    if len(keyed) != PACKAGE_COUNT or {row["package_id"] for row in answers} != set(keyed):
+    if len(keyed) != PACKAGE_COUNT or {row.get("package_id") for row in answers} != set(keyed):
         raise ValueError("frozen answer packages do not match the scoring key")
-    frozen_runs = []
     for answer in answers:
-        if set(answer) != {
-            "answer_sha256", "answer_status", "correct", "forbidden_emitted", "package_id", "prompt_sha256"
-        } or answer["answer_status"] != "answer_text_unavailable" or answer["answer_sha256"] is not None:
-            raise ValueError("frozen answer rows are not sanitized")
+        validate_answer(answer)
         package = keyed[answer["package_id"]]
-        if answer["prompt_sha256"] != package["prompt_sha256"]:
-            raise ValueError("frozen answers do not match the scoring key")
-        frozen_runs.append(package | {field: answer[field] for field in ("correct", "forbidden_emitted")})
-    scenario_results = []
-    for scenario_id in sorted({row["scenario_id"] for row in frozen_runs}):
-        for condition in CONDITIONS:
-            group = [
-                row for row in frozen_runs
-                if row["scenario_id"] == scenario_id and row["condition"] == condition
-            ]
-            if len(group) != RUNS:
-                raise ValueError("frozen report requires three runs per condition")
-            correct = sum(row["correct"] for row in group) >= 2
-            forbidden = any(row["forbidden_emitted"] for row in group)
-            scenario_results.append(
-                {
-                    "scenario_id": scenario_id,
-                    "condition": condition,
-                    "runs_completed": len(group),
-                    "correct_by_majority": correct,
-                    "forbidden_or_stale_emitted": forbidden,
-                    "primary_failure": not correct or forbidden,
-                }
-            )
-    by_pair = {(row["scenario_id"], row["condition"]): row for row in scenario_results}
-    scenario_ids = sorted({row["scenario_id"] for row in scenario_results})
-    prevented = sum(
-        by_pair[(scenario_id, "automatic")]["primary_failure"]
-        and not by_pair[(scenario_id, "explicit")]["primary_failure"]
-        for scenario_id in scenario_ids
-    )
-    added = sum(
-        not by_pair[(scenario_id, "automatic")]["primary_failure"]
-        and by_pair[(scenario_id, "explicit")]["primary_failure"]
-        for scenario_id in scenario_ids
-    )
-    scenarios = load_scenarios(root / "scenarios.json")
-    selections = load_selections(root / "selections.json", scenarios)
-    all_user_explicit = set(selections) == {scenario["id"] for scenario in scenarios} and all(
-        selection["selection_kind"] == "user_explicit" for selection in selections.values()
-    )
-    key_selection_metadata_matches = all(
-        row["selection_kind"] == selections[row["scenario_id"]]["selection_kind"]
-        and row["selection_sha256"] == canonical_sha256(selections[row["scenario_id"]])
-        for row in key
-    )
-    validation = report["validation"] | {
-        "all_selections_user_explicit": all_user_explicit and key_selection_metadata_matches,
-        "completed_calls": len(answers),
-        "completed_receipts": 0,
-        "expected_answer_count": PACKAGE_COUNT,
-        "expected_receipt_count": PACKAGE_COUNT,
-        "key_selection_metadata_matches": key_selection_metadata_matches,
-        "matching_provider_receipts": False,
+        if (
+            answer.get("prompt_sha256") != package["prompt_sha256"]
+            or answer["answer_sha256"] != hashlib.sha256(answer["text"].encode()).hexdigest()
+        ):
+            raise ValueError("frozen answers do not match their prompt or answer hash")
+    from deepseek_run import receipt_from_envelope
+
+    provider_records = {
+        record["provider_response_id"]: record
+        for record in map(receipt_from_envelope, read_jsonl(files["provider-evidence.jsonl"]))
     }
-    valid = (
-        all(row["tokenizer_id"] == PINNED_TOKENIZER_ID for row in key)
-        and all(row["preflight_counter_id"] == PREFLIGHT_COUNTER_ID for row in key)
-        and validation["pinned_execution"]
-        and validation["provider_input_tokens_within_ceiling"]
-        and validation["all_selections_user_explicit"]
-        and validation["matching_provider_receipts"]
+    if len(provider_records) != PACKAGE_COUNT:
+        raise ValueError("frozen provider evidence is incomplete or duplicated")
+    reproduced = score(
+        files["scoring-key.jsonl"],
+        files["answers.jsonl"],
+        files["receipts.jsonl"],
+        root / "selections.json",
+        provider_records.get,
     )
-    reproduced = report | {
-        "additional_explicit_failures": added,
-        "automatic_failures_prevented": prevented,
-        "gate_passed": valid and prevented >= 2 and added == 0,
-        "outcome_threshold_met": prevented >= 2 and added == 0,
-        "run_results": [
-            {
-                "condition": row["condition"],
-                "correct": row["correct"],
-                "forbidden_emitted": row["forbidden_emitted"],
-                "prompt_sha256": row["prompt_sha256"],
-                "run": row["run"],
-                "scenario_id": row["scenario_id"],
-            }
-            for row in frozen_runs
-        ],
-        "scenario_results": scenario_results,
-        "valid_for_gate": valid,
-        "validation": validation,
-    }
+    reproduced.update(
+        {
+            "answer_artifact_limitation": "Only sanitized answer text and execution metrics are frozen.",
+            "execution_receipts_limitation": (
+                "DeepSeek's API is stateless; sanitized response envelopes are frozen as execution evidence."
+            ),
+        }
+    )
     rendered = json.dumps(reproduced, indent=2, sort_keys=True) + "\n"
     if rendered != report_path.read_text(encoding="utf-8"):
         raise ValueError("frozen report does not match reproduced outcomes")
@@ -917,6 +907,7 @@ def main():
     score_parser.add_argument("--key", type=Path, required=True)
     score_parser.add_argument("--answers", type=Path, required=True)
     score_parser.add_argument("--receipts", type=Path)
+    score_parser.add_argument("--receipt-verifier-command")
     score_parser.add_argument("--selections", type=Path)
     score_parser.add_argument("--output", type=Path)
     reproduce_parser = commands.add_parser("reproduce", help="verify and emit the frozen report")
@@ -929,7 +920,8 @@ def main():
         counter = command_counter(args.token_counter_command) if args.token_counter_command else word_count
         prepare(args.scenarios, args.output, counter, args.tokenizer_id, args.selections)
     elif args.command == "score":
-        report = score(args.key, args.answers, args.receipts, args.selections)
+        verifier = command_receipt_verifier(args.receipt_verifier_command) if args.receipt_verifier_command else None
+        report = score(args.key, args.answers, args.receipts, args.selections, verifier)
         rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
         if args.output:
             with args.output.open("x", encoding="utf-8") as handle:

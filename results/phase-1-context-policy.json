@@ -1,25 +1,25 @@
 {
   "additional_explicit_failures": 0,
-  "answer_artifact_limitation": "Only sanitized measured outcomes are frozen; raw answer text and answer hashes are unavailable.",
+  "answer_artifact_limitation": "Only sanitized answer text and execution metrics are frozen.",
   "answer_count": 48,
   "automatic_failures_prevented": 0,
-  "execution_receipts_limitation": "No genuine provider execution receipt file is available; answer metadata does not validate execution.",
+  "execution_receipts_limitation": "DeepSeek's API is stateless; sanitized response envelopes are frozen as execution evidence.",
   "gate_passed": false,
   "metrics": {
     "automatic": {
-      "mean_elapsed_ms": 9442.208333333334,
-      "mean_input_tokens": 21010.875,
+      "mean_elapsed_ms": 730.6666666666666,
+      "mean_input_tokens": 723.125,
       "mean_manual_actions": 0.0,
       "mean_relevant_context_precision": 0.18555472305472306
     },
     "explicit": {
-      "mean_elapsed_ms": 9651.0,
-      "mean_input_tokens": 20460.125,
+      "mean_elapsed_ms": 771.125,
+      "mean_input_tokens": 157.625,
       "mean_manual_actions": 0.0,
       "mean_relevant_context_precision": 1.0
     }
   },
-  "model_id": "gpt-5.6-sol",
+  "model_id": "deepseek-v4-flash",
   "outcome_threshold_met": false,
   "preflight_counter_id": "whitespace-v1",
   "provenance_limitation": "Fixtures use recorded workflow evidence. Some source workflows record no subagent, session, or run provenance; no multi-agent provenance is claimed.",
@@ -234,7 +234,7 @@
     },
     {
       "condition": "automatic",
-      "correct": true,
+      "correct": false,
       "forbidden_emitted": false,
       "prompt_sha256": "4329ad00ae03eefced51fa516bafdf4df155d8102aae6a7480ab53127cbde0f2",
       "run": 1,
@@ -250,7 +250,7 @@
     },
     {
       "condition": "automatic",
-      "correct": true,
+      "correct": false,
       "forbidden_emitted": false,
       "prompt_sha256": "4329ad00ae03eefced51fa516bafdf4df155d8102aae6a7480ab53127cbde0f2",
       "run": 2,
@@ -266,7 +266,7 @@
     },
     {
       "condition": "explicit",
-      "correct": true,
+      "correct": false,
       "forbidden_emitted": false,
       "prompt_sha256": "33a1822717f298e1ab21b5dded1448b679d11daf4766f48a7f35fc555201b7c6",
       "run": 1,
@@ -274,7 +274,7 @@
     },
     {
       "condition": "explicit",
-      "correct": true,
+      "correct": false,
       "forbidden_emitted": false,
       "prompt_sha256": "33a1822717f298e1ab21b5dded1448b679d11daf4766f48a7f35fc555201b7c6",
       "run": 2,
@@ -306,7 +306,7 @@
     },
     {
       "condition": "automatic",
-      "correct": true,
+      "correct": false,
       "forbidden_emitted": false,
       "prompt_sha256": "4329ad00ae03eefced51fa516bafdf4df155d8102aae6a7480ab53127cbde0f2",
       "run": 3,
@@ -338,7 +338,7 @@
     },
     {
       "condition": "explicit",
-      "correct": true,
+      "correct": false,
       "forbidden_emitted": false,
       "prompt_sha256": "33a1822717f298e1ab21b5dded1448b679d11daf4766f48a7f35fc555201b7c6",
       "run": 3,
@@ -414,17 +414,17 @@
   "scenario_results": [
     {
       "condition": "automatic",
-      "correct_by_majority": true,
+      "correct_by_majority": false,
       "forbidden_or_stale_emitted": false,
-      "primary_failure": false,
+      "primary_failure": true,
       "runs_completed": 3,
       "scenario_id": "adversarial-handoff-authority"
     },
     {
       "condition": "explicit",
-      "correct_by_majority": true,
+      "correct_by_majority": false,
       "forbidden_or_stale_emitted": false,
-      "primary_failure": false,
+      "primary_failure": true,
       "runs_completed": 3,
       "scenario_id": "adversarial-handoff-authority"
     },
@@ -541,24 +541,28 @@
       "scenario_id": "stale-frozen-result"
     }
   ],
-  "selection_provenance_limitation": "All eight committed selections are workflow_observed; user confirmation for user_explicit selections is unavailable.",
   "settings": {
-    "reasoning_effort": "low",
+    "max_output_tokens": 64,
+    "reasoning": {
+      "effort": "none"
+    },
     "temperature": 0
   },
-  "tokenizer_id": "gpt-5.6-sol-provider-input-v1",
-  "valid_for_gate": false,
+  "tokenizer_id": "deepseek-v4-flash-provider-input-v1",
+  "valid_for_gate": true,
   "validation": {
-    "all_selections_user_explicit": false,
+    "all_selections_user_explicit": true,
     "completed_calls": 48,
-    "completed_receipts": 0,
+    "completed_receipts": 48,
     "expected_answer_count": 48,
     "expected_receipt_count": 48,
     "key_selection_metadata_matches": true,
-    "matching_provider_receipts": false,
-    "max_provider_input_tokens": 21417,
+    "matching_provider_receipts": true,
+    "max_provider_input_tokens": 1133,
     "pinned_execution": true,
     "provider_input_tokens_within_ceiling": true,
+    "provider_receipts_verified": true,
+    "receipt_bindings_match": true,
     "single_model_settings": true,
     "temperature_zero": true
   }

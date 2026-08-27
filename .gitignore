@@ -1,3 +1,6 @@
 __pycache__/
 *.py[cod]
+.env.dev
 .omc/
+docs/private/phase-1/*
+!docs/private/phase-1/README.md

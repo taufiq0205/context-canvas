@@ -1,10 +1,12 @@
 {
   "files": {
-    "answers.jsonl": "ab1ae7702c5a73db247d18199eae8c2685679e361de3f32c76faeefe7fb891db",
-    "report.json": "d6e2f9a5f25d93eb2c53d7cb95e4f326226917cd1d8d759ff96432b4ddd06303",
+    "answers.jsonl": "e3bc2fe65d1f689505ad0d8c257aef496f4efbab44cd1a4b5e15d4eb8d013451",
+    "provider-evidence.jsonl": "1581ae89ed2588324e4fb17e7183c222b2352778ad793626931372b90d0ed6f3",
+    "receipts.jsonl": "950b8625591e66262e619b1752c84755e23d62edba1b86b64a5304f65bf20500",
+    "report.json": "c2c00a2b97a9d783e177df139344aa77a57be8fd95b603907b0a71158163c7b7",
     "scenarios.json": "678346012f16cb97c2c14ac93fe1dceb3d7cc82ed460ac48d6c5ce542ee48bed",
-    "scoring-key.jsonl": "65476ea020ed1ce4a33492f46f943752484257618758f91891407845ec3b8e7c",
-    "selections.json": "e5c39466e678afd7c09c67cdc7d587d64ce54cb3d372aaad75c3bc1e77fc1e66"
+    "scoring-key.jsonl": "870b92df9c1e6a693bf7ce19a67436b1857718b2bbbb673ff71f0283fcdb140e",
+    "selections.json": "14bfb9aa14f886eb7f24415cb2bc4ff86992d9c3a1db2dde1dbb01bad40edafb"
   },
   "hash_algorithm": "sha256",
   "packages_sha256": "202c92ded51474a2c83067e4f77cc50fdd94acd0e3a9fa3cd4245b438e231cb3",

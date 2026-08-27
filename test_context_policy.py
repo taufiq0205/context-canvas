@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 
 import context_policy
+import deepseek_run
 
 
 class ContextPolicyTest(unittest.TestCase):
@@ -152,7 +153,7 @@ class ContextPolicyTest(unittest.TestCase):
             self.assertFalse(report["valid_for_gate"])
             self.assertFalse(report["validation"]["all_selections_user_explicit"])
 
-    def test_answers_without_receipts_cannot_validate_execution(self):
+    def test_caller_authored_receipts_cannot_validate_execution(self):
         with tempfile.TemporaryDirectory() as directory:
             selections = self._selection_payload()
             for selection in selections["selections"]:
@@ -169,12 +170,16 @@ class ContextPolicyTest(unittest.TestCase):
             key = context_policy.read_jsonl(output / "key.jsonl")
             context_policy.write_jsonl(output / "answers.jsonl", self._answers(key))
 
+            receipts_path = Path(directory) / "receipts.jsonl"
+            context_policy.write_jsonl(receipts_path, self._receipts(key, self._answers(key)))
             report = context_policy.score(
-                output / "key.jsonl", output / "answers.jsonl", selections_path=selection_path
+                output / "key.jsonl", output / "answers.jsonl", receipts_path, selection_path
             )
 
             self.assertFalse(report["valid_for_gate"])
             self.assertFalse(report["validation"]["matching_provider_receipts"])
+            self.assertTrue(report["validation"]["receipt_bindings_match"])
+            self.assertFalse(report["validation"]["provider_receipts_verified"])
 
     def test_key_selection_metadata_cannot_override_canonical_selection(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -268,8 +273,13 @@ class ContextPolicyTest(unittest.TestCase):
             receipts_path = Path(directory) / "receipts.jsonl"
             context_policy.write_jsonl(receipts_path, self._receipts(key, answers))
 
+            receipts = {row["provider_response_id"]: row for row in self._receipts(key, answers)}
             report = context_policy.score(
-                output / "key.jsonl", output / "answers.jsonl", receipts_path, selection_path
+                output / "key.jsonl",
+                output / "answers.jsonl",
+                receipts_path,
+                selection_path,
+                receipts.get,
             )
 
             self.assertTrue(report["gate_passed"])
@@ -308,13 +318,97 @@ class ContextPolicyTest(unittest.TestCase):
             context_policy.reproduce(Path("results/phase-1-context-policy"))
         self.assertEqual(Path("results/phase-1-context-policy.json").read_text(), output.getvalue())
 
+    def test_complete_frozen_answers_reproduce_from_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            artifact = Path(directory) / "phase-1-context-policy"
+            context_policy.prepare(
+                Path("scenarios.json"), artifact, context_policy.word_count, context_policy.PINNED_TOKENIZER_ID
+            )
+            shutil.copy(artifact / "key.jsonl", artifact / "scoring-key.jsonl")
+            key = context_policy.read_jsonl(artifact / "scoring-key.jsonl")
+            answers = self._answers(key)
+            evidence = []
+            for answer, package in zip(answers, key):
+                answer["prompt_sha256"] = package["prompt_sha256"]
+                answer["answer_sha256"] = hashlib.sha256(answer["text"].encode()).hexdigest()
+                evidence.append(
+                    {
+                        "package_id": package["package_id"],
+                        "prompt_sha256": package["prompt_sha256"],
+                        "elapsed_ms": 1,
+                        "response": {
+                            "id": f"test-provider-{package['package_id']}",
+                            "status": "completed",
+                            "model": context_policy.PINNED_MODEL_ID,
+                            "created_at": 1787788800,
+                            "usage": {"input_tokens": 1},
+                            "output": [
+                                {
+                                    "type": "message",
+                                    "content": [{"type": "output_text", "text": answer["text"]}],
+                                }
+                            ],
+                        },
+                    }
+                )
+            context_policy.write_jsonl(artifact / "answers.jsonl", answers)
+            context_policy.write_jsonl(artifact / "provider-evidence.jsonl", evidence)
+            receipts = [deepseek_run.receipt_from_envelope(row) for row in evidence]
+            context_policy.write_jsonl(artifact / "receipts.jsonl", receipts)
+            provider_records = {row["provider_response_id"]: row for row in receipts}
+            report = context_policy.score(
+                artifact / "scoring-key.jsonl",
+                artifact / "answers.jsonl",
+                artifact / "receipts.jsonl",
+                provider_verifier=provider_records.get,
+            )
+            report.update(
+                {
+                    "answer_artifact_limitation": "Only sanitized answer text and execution metrics are frozen.",
+                    "execution_receipts_limitation": (
+                        "DeepSeek's API is stateless; sanitized response envelopes are frozen as execution evidence."
+                    ),
+                }
+            )
+            report_path = artifact.with_suffix(".json")
+            rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
+            report_path.write_text(rendered)
+            files = {
+                "scenarios.json": Path("scenarios.json"),
+                "selections.json": Path("selections.json"),
+                "scoring-key.jsonl": artifact / "scoring-key.jsonl",
+                "answers.jsonl": artifact / "answers.jsonl",
+                "receipts.jsonl": artifact / "receipts.jsonl",
+                "provider-evidence.jsonl": artifact / "provider-evidence.jsonl",
+                "report.json": report_path,
+            }
+            manifest = {
+                "schema_version": 1,
+                "hash_algorithm": "sha256",
+                "packages_sha256": context_policy.sha256_file(artifact / "packages.jsonl"),
+                "files": {name: context_policy.sha256_file(path) for name, path in files.items()},
+            }
+            manifest_path = artifact / "checksums.json"
+            manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+            original = context_policy.FROZEN_MANIFEST_SHA256
+            context_policy.FROZEN_MANIFEST_SHA256 = context_policy.sha256_file(manifest_path)
+            try:
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    context_policy.reproduce(artifact)
+            finally:
+                context_policy.FROZEN_MANIFEST_SHA256 = original
+            self.assertEqual(rendered, output.getvalue())
+
     def test_frozen_answer_tampering_fails_verification(self):
         with tempfile.TemporaryDirectory() as directory:
             artifact = Path(directory) / "phase-1-context-policy"
             shutil.copytree("results/phase-1-context-policy", artifact)
             shutil.copy("results/phase-1-context-policy.json", artifact.with_suffix(".json"))
             answers = artifact / "answers.jsonl"
-            answers.write_text(answers.read_text().replace('"correct": true', '"correct": false', 1))
+            rows = context_policy.read_jsonl(answers)
+            rows[0]["text"] += " tampered"
+            answers.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows))
             with self.assertRaises(ValueError):
                 context_policy.reproduce(artifact)
 
