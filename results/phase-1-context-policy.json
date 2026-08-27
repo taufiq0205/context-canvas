@@ -1,0 +1,557 @@
+{
+  "additional_explicit_failures": 0,
+  "answer_count": 48,
+  "automatic_failures_prevented": 0,
+  "gate_passed": false,
+  "metrics": {
+    "automatic": {
+      "mean_elapsed_ms": 9442.208333333334,
+      "mean_input_tokens": 21010.875,
+      "mean_manual_actions": 0.0,
+      "mean_relevant_context_precision": 0.18555472305472306
+    },
+    "explicit": {
+      "mean_elapsed_ms": 9651.0,
+      "mean_input_tokens": 20460.125,
+      "mean_manual_actions": 0.0,
+      "mean_relevant_context_precision": 1.0
+    }
+  },
+  "model_id": "gpt-5.6-sol",
+  "outcome_threshold_met": false,
+  "preflight_counter_id": "whitespace-v1",
+  "provenance_limitation": "Fixtures use recorded workflow evidence. Some source workflows record no subagent, session, or run provenance; no multi-agent provenance is claimed.",
+  "run_results": [
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "ed57827fd21890ad6cd80c7826842ed73db4695db4c93945ccd822b112646c34",
+      "run": 1,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "1293ac775bbc5a9b6d8f8dfb01a36dfd4af678dbf67a8cca18120baad6fe97e8",
+      "run": 1,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "733d7b38d422b4f49eda4e9c7ff0f66c1d5ef58413eb30a95db55662d1448a52",
+      "run": 3,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "8a36c12f95597248a8cd1a495c3f4b8ba3beb4d5ef9b8cebf838068c17de6bc8",
+      "run": 3,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "ba10e41850e8596acfc0f97786aa13d0c84568354100743469ef78ce069c3291",
+      "run": 2,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a6d26a68786ec4de89106b822c2f9a4656c4027bdd3f178a2bf6df09edbfc1e8",
+      "run": 1,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "ed57827fd21890ad6cd80c7826842ed73db4695db4c93945ccd822b112646c34",
+      "run": 3,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "4a052cdf986cad69131f2a3ed0cf65400d3616ab33a5730d9a962ea46c54dfd6",
+      "run": 2,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "ed57827fd21890ad6cd80c7826842ed73db4695db4c93945ccd822b112646c34",
+      "run": 2,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "ba10e41850e8596acfc0f97786aa13d0c84568354100743469ef78ce069c3291",
+      "run": 3,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "6d81af02bed31c3c2efe823247a8ec3c4f260bd30b0978a394676eb772819569",
+      "run": 2,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "786e3a574e570443761e83d1325dc2580010a6c638827780acda3c94d65490c6",
+      "run": 3,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "ba10e41850e8596acfc0f97786aa13d0c84568354100743469ef78ce069c3291",
+      "run": 1,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "786e3a574e570443761e83d1325dc2580010a6c638827780acda3c94d65490c6",
+      "run": 2,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "733d7b38d422b4f49eda4e9c7ff0f66c1d5ef58413eb30a95db55662d1448a52",
+      "run": 1,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "8a36c12f95597248a8cd1a495c3f4b8ba3beb4d5ef9b8cebf838068c17de6bc8",
+      "run": 1,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "1293ac775bbc5a9b6d8f8dfb01a36dfd4af678dbf67a8cca18120baad6fe97e8",
+      "run": 2,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "851c2768f25c138b82c7186f73f41506ccdd919ea9aaa45fed5b7d8c1aa25321",
+      "run": 1,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "66ec2bec422a87a155558e2f85fa141fe97ffda9a42622eb4a63f8aea37bb2bd",
+      "run": 1,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "b7fe239143edd6b4636baac31d20d2b334e80b7c81b2d05753229d1a6231556d",
+      "run": 2,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "6d81af02bed31c3c2efe823247a8ec3c4f260bd30b0978a394676eb772819569",
+      "run": 1,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "851c2768f25c138b82c7186f73f41506ccdd919ea9aaa45fed5b7d8c1aa25321",
+      "run": 2,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "b7fe239143edd6b4636baac31d20d2b334e80b7c81b2d05753229d1a6231556d",
+      "run": 3,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "3b060e1361771494565b248c7dd58b047d9e1c18334bda13e7d0df9566556013",
+      "run": 1,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "66ec2bec422a87a155558e2f85fa141fe97ffda9a42622eb4a63f8aea37bb2bd",
+      "run": 3,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "851c2768f25c138b82c7186f73f41506ccdd919ea9aaa45fed5b7d8c1aa25321",
+      "run": 3,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "4329ad00ae03eefced51fa516bafdf4df155d8102aae6a7480ab53127cbde0f2",
+      "run": 1,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "3b060e1361771494565b248c7dd58b047d9e1c18334bda13e7d0df9566556013",
+      "run": 2,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "4329ad00ae03eefced51fa516bafdf4df155d8102aae6a7480ab53127cbde0f2",
+      "run": 2,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "d50a64fe566c6b4531672f17ab87cbac3c6776da6815d8f6c0c0a0441be5148d",
+      "run": 2,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "33a1822717f298e1ab21b5dded1448b679d11daf4766f48a7f35fc555201b7c6",
+      "run": 1,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "33a1822717f298e1ab21b5dded1448b679d11daf4766f48a7f35fc555201b7c6",
+      "run": 2,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "4a052cdf986cad69131f2a3ed0cf65400d3616ab33a5730d9a962ea46c54dfd6",
+      "run": 1,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "d50a64fe566c6b4531672f17ab87cbac3c6776da6815d8f6c0c0a0441be5148d",
+      "run": 1,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "b7fe239143edd6b4636baac31d20d2b334e80b7c81b2d05753229d1a6231556d",
+      "run": 1,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "4329ad00ae03eefced51fa516bafdf4df155d8102aae6a7480ab53127cbde0f2",
+      "run": 3,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "3b060e1361771494565b248c7dd58b047d9e1c18334bda13e7d0df9566556013",
+      "run": 3,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a6d26a68786ec4de89106b822c2f9a4656c4027bdd3f178a2bf6df09edbfc1e8",
+      "run": 3,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "6d81af02bed31c3c2efe823247a8ec3c4f260bd30b0978a394676eb772819569",
+      "run": 3,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "33a1822717f298e1ab21b5dded1448b679d11daf4766f48a7f35fc555201b7c6",
+      "run": 3,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "733d7b38d422b4f49eda4e9c7ff0f66c1d5ef58413eb30a95db55662d1448a52",
+      "run": 2,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "a6d26a68786ec4de89106b822c2f9a4656c4027bdd3f178a2bf6df09edbfc1e8",
+      "run": 2,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "8a36c12f95597248a8cd1a495c3f4b8ba3beb4d5ef9b8cebf838068c17de6bc8",
+      "run": 2,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "66ec2bec422a87a155558e2f85fa141fe97ffda9a42622eb4a63f8aea37bb2bd",
+      "run": 2,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "1293ac775bbc5a9b6d8f8dfb01a36dfd4af678dbf67a8cca18120baad6fe97e8",
+      "run": 3,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "4a052cdf986cad69131f2a3ed0cf65400d3616ab33a5730d9a962ea46c54dfd6",
+      "run": 3,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "automatic",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "d50a64fe566c6b4531672f17ab87cbac3c6776da6815d8f6c0c0a0441be5148d",
+      "run": 3,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "explicit",
+      "correct": true,
+      "forbidden_emitted": false,
+      "prompt_sha256": "786e3a574e570443761e83d1325dc2580010a6c638827780acda3c94d65490c6",
+      "run": 1,
+      "scenario_id": "adversarial-privacy-gate"
+    }
+  ],
+  "runs_per_condition": 3,
+  "scenario_count": 8,
+  "scenario_results": [
+    {
+      "condition": "automatic",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "adversarial-handoff-authority"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "adversarial-privacy-gate"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "conflicting-launch-status"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "conflicting-prerequisite"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "irrelevant-plan-destination"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "irrelevant-standalone-boundary"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "stale-approved-scope"
+    },
+    {
+      "condition": "automatic",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "stale-frozen-result"
+    },
+    {
+      "condition": "explicit",
+      "correct_by_majority": true,
+      "forbidden_or_stale_emitted": false,
+      "primary_failure": false,
+      "runs_completed": 3,
+      "scenario_id": "stale-frozen-result"
+    }
+  ],
+  "settings": {
+    "reasoning_effort": "low",
+    "temperature": 0
+  },
+  "tokenizer_id": "gpt-5.6-sol-provider-input-v1",
+  "valid_for_gate": true,
+  "validation": {
+    "completed_calls": 48,
+    "expected_answer_count": 48,
+    "max_provider_input_tokens": 21417,
+    "pinned_execution": true,
+    "provider_input_tokens_within_ceiling": true,
+    "single_model_settings": true,
+    "temperature_zero": true
+  }
+}

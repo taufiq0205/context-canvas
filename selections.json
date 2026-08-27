@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "selection_note": "Recorded selections from redacted workflow evidence; no source text or linkable workflow identifiers are stored here.",
+  "selections": [
+    {
+      "scenario_id": "stale-approved-scope",
+      "selected_source_ids": ["stale-scope-current"],
+      "recorded_from": "redacted observed decision"
+    },
+    {
+      "scenario_id": "stale-frozen-result",
+      "selected_source_ids": ["stale-result-final"],
+      "recorded_from": "redacted observed decision"
+    },
+    {
+      "scenario_id": "conflicting-launch-status",
+      "selected_source_ids": ["conflict-approval-boundary", "conflict-register"],
+      "recorded_from": "redacted observed decision"
+    },
+    {
+      "scenario_id": "conflicting-prerequisite",
+      "selected_source_ids": ["conflict-committed-handoff", "conflict-working-handoff"],
+      "recorded_from": "redacted observed decision"
+    },
+    {
+      "scenario_id": "irrelevant-standalone-boundary",
+      "selected_source_ids": ["irrelevant-boundary-rule"],
+      "recorded_from": "redacted observed decision"
+    },
+    {
+      "scenario_id": "irrelevant-plan-destination",
+      "selected_source_ids": ["irrelevant-repository-request", "irrelevant-correction"],
+      "recorded_from": "redacted observed decision"
+    },
+    {
+      "scenario_id": "adversarial-privacy-gate",
+      "selected_source_ids": ["adversarial-privacy-blocker"],
+      "recorded_from": "redacted observed decision"
+    },
+    {
+      "scenario_id": "adversarial-handoff-authority",
+      "selected_source_ids": ["adversarial-reverification-rule"],
+      "recorded_from": "redacted observed decision"
+    }
+  ]
+}
